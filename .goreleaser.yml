@@ -1,0 +1,76 @@
+version: 2
+
+project_name: mdpush
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: mdpush
+    main: ./
+    binary: mdpush
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+      - linux
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w -X github.com/mdpush-io/cli/cmd.Version={{.Version}}
+
+archives:
+  - id: mdpush
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_
+      {{- if eq .Os "darwin" }}darwin{{- else }}{{ .Os }}{{ end }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "arm64" }}arm64
+      {{- else }}{{ .Arch }}{{ end }}
+    files:
+      - LICENSE
+      - README.md
+
+checksum:
+  name_template: "checksums.txt"
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - "Merge pull request"
+      - "Merge branch"
+
+release:
+  github:
+    owner: mdpush-io
+    name: cli
+  draft: false
+  prerelease: auto
+
+brews:
+  - name: mdpush
+    repository:
+      owner: mdpush-io
+      name: homebrew-mdpush
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    directory: Formula
+    homepage: "https://www.mdpush.io"
+    description: "End-to-end encrypted markdown sharing for engineers and AI agents"
+    license: "MIT"
+    commit_author:
+      name: goreleaserbot
+      email: bot@goreleaser.com
+    commit_msg_template: "brew: mdpush {{ .Tag }}"
+    test: |
+      system "#{bin}/mdpush", "--version"
+    install: |
+      bin.install "mdpush"
