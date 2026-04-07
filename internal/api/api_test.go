@@ -406,7 +406,6 @@ func TestGeneratePassword(t *testing.T) {
 		}
 		json.NewEncoder(w).Encode(GeneratePasswordResponse{
 			Password: "brave-new-world",
-			Hash:     "abc123hex",
 			Theme:    "books",
 		})
 	})
