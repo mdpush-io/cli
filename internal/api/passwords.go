@@ -8,7 +8,6 @@ type GeneratePasswordRequest struct {
 
 type GeneratePasswordResponse struct {
 	Password string `json:"password"`
-	Hash     string `json:"hash"`
 	Theme    string `json:"theme"`
 }
 

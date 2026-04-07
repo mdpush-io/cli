@@ -270,13 +270,17 @@ func resolveStrongLockPassword(client *api.Client) (password, hash string, err e
 		return flagPassword, crypto.SHA256Hex(normalized), nil
 	}
 
-	// Generate themed password from server
+	// Generate themed password from server. The server intentionally no longer
+	// returns the hash (that would let an unauthenticated attacker build a
+	// rainbow table of every possible themed password). We hash locally using
+	// the same normalization the reader's auth check uses.
 	resp, err := client.GeneratePassword(flagPwTheme)
 	if err != nil {
 		return "", "", fmt.Errorf("generating password: %w", err)
 	}
 
-	return resp.Password, resp.Hash, nil
+	normalized := crypto.NormalizeLockCredential(resp.Password)
+	return resp.Password, crypto.SHA256Hex(normalized), nil
 }
 
 // parseExpiration converts a duration string like "3d" or "12h" to seconds.
